@@ -8,7 +8,9 @@ Built with [OpenClaw](https://github.com/anthropics/openclaw) + [Actual Budget](
 
 ## Demo
 
-https://github.com/mingrath/openclaw-actual-budget/raw/main/demo.mp4
+![Demo](demo.gif)
+
+> [Watch full video (MP4)](demo.mp4)
 
 ### 1. Scan a Receipt
 
