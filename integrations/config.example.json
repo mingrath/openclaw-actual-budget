@@ -1,0 +1,6 @@
+{
+  "serverUrl": "http://localhost:5006",
+  "password": "YOUR_ACTUAL_BUDGET_PASSWORD",
+  "budgetId": "YOUR_BUDGET_GROUP_ID",
+  "budgetName": "My Budget 2026"
+}
