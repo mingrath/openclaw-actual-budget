@@ -1,16 +1,124 @@
 # openclaw-actual-budget
 
-A ready-to-fork template for building a **personal finance AI agent** with [OpenClaw](https://github.com/anthropics/openclaw) + [Actual Budget](https://actualbudget.org/) + Telegram.
+> **Your personal finance AI agent** — scan receipts, track expenses, query budgets. All from Telegram.
 
-Send your agent a bank slip photo or type "90 lunch" — it reads it, logs the transaction, and confirms. Ask "how much did I spend this month?" and it queries your budget instantly.
+Built with [OpenClaw](https://github.com/anthropics/openclaw) + [Actual Budget](https://actualbudget.org/) + Telegram.
+
+---
+
+## Demo
+
+### 1. Scan a Receipt
+
+Send a photo of a bank slip or receipt — the AI reads it and logs it automatically.
+
+```
+┌─────────────────────────────────────────┐
+│  You:                                   │
+│  📷 [bank_transfer_receipt.jpg]         │
+│                                         │
+│  Penny:                                 │
+│  ✅ Logged!                             │
+│  📅 01 Mar | 💸 -$42.50                 │
+│  🏪 Whole Foods Market | 🏦 Checking    │
+│  📝 Ref: TXN-20260301-8847             │
+└─────────────────────────────────────────┘
+```
+
+### 2. Quick Text Logging
+
+Just type the amount and what it was for.
+
+```
+┌─────────────────────────────────────────┐
+│  You:  90 lunch                         │
+│                                         │
+│  Penny:                                 │
+│  ✅ Logged!                             │
+│  📅 01 Mar | 💸 -$90.00                 │
+│  🏪 lunch | 🏦 Checking                 │
+├─────────────────────────────────────────┤
+│  You:  grab 150                         │
+│                                         │
+│  Penny:                                 │
+│  ✅ Logged!                             │
+│  📅 01 Mar | 💸 -$150.00                │
+│  🏪 Grab | 🏦 Checking                  │
+├─────────────────────────────────────────┤
+│  You:  salary 5000 income Savings       │
+│                                         │
+│  Penny:                                 │
+│  ✅ Logged!                             │
+│  📅 01 Mar | 💰 +$5,000.00              │
+│  🏪 Salary | 🏦 Savings                 │
+└─────────────────────────────────────────┘
+```
+
+### 3. Ask About Your Spending
+
+```
+┌─────────────────────────────────────────┐
+│  You:  how much did I spend this month? │
+│                                         │
+│  Penny:                                 │
+│  📊 March 2026 Summary                  │
+│                                         │
+│  💸 Expenses:  -$2,847.50               │
+│  💰 Income:    +$5,000.00               │
+│  📈 Net:       +$2,152.50               │
+│                                         │
+│  Top categories:                        │
+│  🍔 Food:        -$890.00  (31%)        │
+│  🚗 Transport:   -$650.00  (23%)        │
+│  🛒 Shopping:    -$520.00  (18%)        │
+│  💡 Bills:       -$487.50  (17%)        │
+│  🎬 Fun:         -$300.00  (11%)        │
+├─────────────────────────────────────────┤
+│  You:  what's my balance?               │
+│                                         │
+│  Penny:                                 │
+│  🏦 Account Balances                    │
+│                                         │
+│  Checking:     $12,450.00               │
+│  Savings:      $45,000.00               │
+│  Credit Card:     -$273.58              │
+└─────────────────────────────────────────┘
+```
+
+---
+
+## How It Works
+
+```
+┌──────────┐     ┌──────────┐     ┌──────────────┐     ┌───────────────┐
+│          │     │          │     │              │     │               │
+│ Telegram │────▶│ OpenClaw │────▶│  AI Agent    │────▶│ Actual Budget │
+│   App    │◀────│  Server  │◀────│  (Penny)     │◀────│   (SQLite)    │
+│          │     │          │     │              │     │               │
+└──────────┘     └──────────┘     └──────────────┘     └───────────────┘
+   phone            router          reads images          stores data
+                                    parses text           runs queries
+                                    calls scripts         syncs budgets
+```
+
+1. **You** send a receipt photo or text to your Telegram bot
+2. **OpenClaw** routes it to your budget agent
+3. **The agent** reads the image (no OCR needed — the AI IS the OCR), extracts transaction details
+4. **add-transaction.js** logs it in Actual Budget
+5. **The agent** confirms with a clean summary
+
+---
 
 ## What You Get
 
-- **Receipt scanning** — Send a photo of a bank slip or receipt. The AI reads it (no OCR service needed) and extracts date, amount, payee, and account.
-- **Quick text logging** — Type "90 lunch" or "grab 150" and it logs the expense.
-- **Budget queries** — Ask for recent transactions, account balances, monthly summaries, or search by payee.
-- **Multi-account support** — Track multiple bank accounts and credit cards.
-- **Telegram interface** — Your agent lives in Telegram. Send it messages from anywhere.
+- **Receipt scanning** — Send a photo of any bank slip or receipt. The AI reads it directly and extracts date, amount, payee, and account.
+- **Quick text logging** — Type "90 lunch" or "grab 150" and it logs the expense instantly.
+- **Budget queries** — Recent transactions, account balances, monthly summaries, or search by payee.
+- **Multi-account support** — Track checking, savings, credit cards — as many accounts as you need.
+- **Telegram interface** — Works from your phone, anywhere. No app to install.
+- **Self-hosted** — Your financial data stays on your server. No cloud services.
+
+---
 
 ## Prerequisites
 
