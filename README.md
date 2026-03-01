@@ -8,6 +8,8 @@ Built with [OpenClaw](https://github.com/anthropics/openclaw) + [Actual Budget](
 
 ## Demo
 
+https://github.com/mingrath/openclaw-actual-budget/raw/main/demo.mp4
+
 ### 1. Scan a Receipt
 
 Send a photo of a bank slip or receipt — the AI reads it and logs it automatically.
