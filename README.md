@@ -318,3 +318,260 @@ For queries, the agent calls `query-budget.js` with commands like `recent`, `bal
 ## License
 
 MIT
+
+---
+
+# openclaw-actual-budget (ภาษาไทย)
+
+> **AI ผู้ช่วยจัดการเงินส่วนตัว** — สแกนใบเสร็จ, บันทึกรายจ่าย, ดูสรุปงบประมาณ ทั้งหมดผ่าน Telegram
+
+สร้างด้วย [OpenClaw](https://github.com/anthropics/openclaw) + [Actual Budget](https://actualbudget.org/) + Telegram
+
+---
+
+## สาธิตการใช้งาน
+
+![Demo](demo.gif)
+
+> [ดูวิดีโอเต็ม (MP4)](demo.mp4)
+
+### 1. สแกนใบเสร็จ
+
+ส่งรูปสลิปโอนเงินหรือใบเสร็จ — AI อ่านและบันทึกให้อัตโนมัติ
+
+```
+┌─────────────────────────────────────────┐
+│  คุณ:                                   │
+│  📷 [สลิปโอนเงิน.jpg]                  │
+│                                         │
+│  Penny:                                 │
+│  ✅ บันทึกแล้ว!                         │
+│  📅 01 มี.ค. | 💸 -฿42.50              │
+│  🏪 ร้านอาหาร | 🏦 KBank               │
+│  📝 Ref: TXN-20260301-8847             │
+└─────────────────────────────────────────┘
+```
+
+### 2. พิมพ์บันทึกรายจ่ายเร็ว
+
+แค่พิมพ์จำนวนเงินกับรายละเอียด
+
+```
+┌─────────────────────────────────────────┐
+│  คุณ:  90 ข้าวมันไก่                    │
+│                                         │
+│  Penny:                                 │
+│  ✅ บันทึกแล้ว!                         │
+│  📅 01 มี.ค. | 💸 -฿90.00              │
+│  🏪 ข้าวมันไก่ | 🏦 KBank               │
+├─────────────────────────────────────────┤
+│  คุณ:  grab 150                         │
+│                                         │
+│  Penny:                                 │
+│  ✅ บันทึกแล้ว!                         │
+│  📅 01 มี.ค. | 💸 -฿150.00             │
+│  🏪 Grab | 🏦 KBank                     │
+├─────────────────────────────────────────┤
+│  คุณ:  เงินเดือน 50000 รายรับ ออมทรัพย์  │
+│                                         │
+│  Penny:                                 │
+│  ✅ บันทึกแล้ว!                         │
+│  📅 01 มี.ค. | 💰 +฿50,000.00          │
+│  🏪 เงินเดือน | 🏦 ออมทรัพย์             │
+└─────────────────────────────────────────┘
+```
+
+### 3. ถามเรื่องการใช้จ่าย
+
+```
+┌─────────────────────────────────────────┐
+│  คุณ:  เดือนนี้ใช้ไปเท่าไหร่?           │
+│                                         │
+│  Penny:                                 │
+│  📊 สรุปเดือนมีนาคม 2026               │
+│                                         │
+│  💸 รายจ่าย:   -฿28,475.00             │
+│  💰 รายรับ:   +฿50,000.00              │
+│  📈 คงเหลือ:  +฿21,525.00              │
+│                                         │
+│  หมวดหมู่หลัก:                          │
+│  🍔 อาหาร:      -฿8,900.00  (31%)      │
+│  🚗 เดินทาง:    -฿6,500.00  (23%)      │
+│  🛒 ช้อปปิ้ง:   -฿5,200.00  (18%)      │
+│  💡 ค่าบิล:     -฿4,875.00  (17%)      │
+│  🎬 บันเทิง:    -฿3,000.00  (11%)      │
+├─────────────────────────────────────────┤
+│  คุณ:  ยอดเงินเหลือเท่าไหร่?            │
+│                                         │
+│  Penny:                                 │
+│  🏦 ยอดเงินในบัญชี                      │
+│                                         │
+│  KBank:        ฿124,500.00              │
+│  ออมทรัพย์:    ฿450,000.00              │
+│  บัตรเครดิต:      -฿2,735.80           │
+└─────────────────────────────────────────┘
+```
+
+---
+
+## วิธีการทำงาน
+
+```
+┌──────────┐     ┌──────────┐     ┌──────────────┐     ┌───────────────┐
+│          │     │          │     │              │     │               │
+│ Telegram │────▶│ OpenClaw │────▶│  AI Agent    │────▶│ Actual Budget │
+│   App    │◀────│  Server  │◀────│  (Penny)     │◀────│   (SQLite)    │
+│          │     │          │     │              │     │               │
+└──────────┘     └──────────┘     └──────────────┘     └───────────────┘
+  มือถือ          เราเตอร์          อ่านรูป             เก็บข้อมูล
+                                    แปลงข้อความ          รันคำสั่ง
+                                    เรียกสคริปต์          ซิงค์งบประมาณ
+```
+
+1. **คุณ** ส่งรูปสลิปหรือข้อความไปที่บอท Telegram
+2. **OpenClaw** ส่งต่อไปยัง AI agent ของคุณ
+3. **Agent** อ่านรูปภาพ (ไม่ต้องใช้ OCR แยก — AI อ่านเองได้เลย) หรือแปลงข้อความ
+4. **add-transaction.js** บันทึกรายการใน Actual Budget
+5. **Agent** ยืนยันด้วยข้อความสรุป
+
+---
+
+## ฟีเจอร์
+
+- **สแกนใบเสร็จ** — ส่งรูปสลิปโอนเงินหรือใบเสร็จ AI อ่านและดึงข้อมูลวันที่ จำนวนเงิน ร้านค้า และบัญชีให้อัตโนมัติ
+- **บันทึกรายจ่ายเร็ว** — พิมพ์ "90 ข้าวมันไก่" หรือ "grab 150" ระบบบันทึกให้ทันที
+- **ดูสรุปงบประมาณ** — รายการล่าสุด ยอดเงินในบัญชี สรุปรายเดือน หรือค้นหาตามร้านค้า
+- **รองรับหลายบัญชี** — บัญชีออมทรัพย์ บัญชีกระแสรายวัน บัตรเครดิต จะกี่บัญชีก็ได้
+- **ใช้ผ่าน Telegram** — ใช้ได้จากมือถือ ที่ไหนก็ได้ ไม่ต้องติดตั้งแอปเพิ่ม
+- **โฮสต์เอง** — ข้อมูลการเงินอยู่ในเครื่องคุณ ไม่ส่งขึ้นคลาวด์
+
+---
+
+## สิ่งที่ต้องมี
+
+- [Docker](https://docs.docker.com/get-docker/) (สำหรับ Actual Budget server)
+- [Node.js](https://nodejs.org/) v18+ (สำหรับสคริปต์เชื่อมต่อ)
+- [OpenClaw](https://github.com/anthropics/openclaw) ติดตั้งและตั้งค่าแล้ว
+- บัญชี Telegram
+
+## เริ่มต้นใช้งาน
+
+### ขั้นตอนที่ 1: เปิด Actual Budget
+
+```bash
+cd setup/
+docker compose up -d
+```
+
+เปิด Actual Budget ที่ `http://localhost:5006` ในเบราว์เซอร์ ตั้งรหัสผ่าน และสร้างงบประมาณพร้อมบัญชีธนาคาร
+
+> **ผู้ใช้ Safari:** ถ้าเจอ SharedArrayBuffer error ตอนเข้าจากเครื่องอื่น ให้เปิดส่วน Caddy ใน `docker-compose.yml` เพื่อรองรับ HTTPS หรือกด "Advanced options" บนหน้า error
+
+### ขั้นตอนที่ 2: ติดตั้ง API Package
+
+```bash
+cd integrations/
+npm init -y
+npm install @actual-app/api
+```
+
+### ขั้นตอนที่ 3: ค้นหา Account IDs
+
+```bash
+ACTUAL_PASSWORD=yourpass node setup/discover-accounts.js
+```
+
+จะแสดง budget IDs และ account UUIDs ที่ต้องใช้ในขั้นตอนถัดไป
+
+### ขั้นตอนที่ 4: ตั้งค่าสคริปต์เชื่อมต่อ
+
+```bash
+cd integrations/
+cp config.example.json config.json
+```
+
+แก้ไข `config.json` ใส่รหัสผ่าน Actual Budget และ budget ID จากขั้นตอนที่ 3
+
+จากนั้นอัปเดต `ACCOUNTS` และ `BUDGET_LOCAL_ID` ใน:
+- `integrations/add-transaction.js`
+- `integrations/query-budget.js`
+- `workspace/skills/budget/query-budget.js`
+
+### ขั้นตอนที่ 5: สร้างบอท Telegram
+
+1. เปิด Telegram ค้นหา **@BotFather**
+2. ส่ง `/newbot`
+3. ตั้งชื่อและ username (ต้องลงท้ายด้วย `_bot`)
+4. คัดลอก **bot token**
+
+### ขั้นตอนที่ 6: ลงทะเบียน Agent ใน OpenClaw
+
+เพิ่มรายการต่อไปนี้ใน `~/.openclaw/openclaw.json`:
+
+**Agent entry** (ใน `agents.list`):
+```json
+{
+  "id": "budget-bot",
+  "name": "Budget Bot",
+  "workspace": "/path/to/workspace",
+  "agentDir": "/path/to/agents/budget-bot/agent"
+}
+```
+
+**Telegram binding** (ใน `bindings`):
+```json
+{
+  "agentId": "budget-bot",
+  "match": {
+    "channel": "telegram",
+    "accountId": "budget-bot"
+  }
+}
+```
+
+**Telegram account** (ใน `channels.telegram.accounts`):
+```json
+"budget-bot": {
+  "dmPolicy": "pairing",
+  "botToken": "YOUR_BOT_TOKEN_HERE",
+  "groupPolicy": "open",
+  "streaming": "partial"
+}
+```
+
+### ขั้นตอนที่ 7: วาง Workspace
+
+คัดลอกไฟล์ workspace ไปยังไดเรกทอรี OpenClaw:
+
+```bash
+cp -r workspace/ ~/.openclaw/workspace-budget-bot/
+```
+
+อัปเดตพาธไฟล์ใน workspace:
+- `TOOLS.md` — อัปเดตพาธและ account UUIDs
+- `AGENTS.md` — อัปเดตพาธคำสั่งเครื่องมือ
+- `skills/budget/SKILL.md` — อัปเดตพาธคำสั่งเครื่องมือ
+- `skills/budget/query-budget.js` — อัปเดตพาธ config
+- `skills/receipt-parser/SKILL.md` — อัปเดตพาธ add-transaction
+
+### ขั้นตอนที่ 8: ทดสอบ
+
+```bash
+# ทดสอบเพิ่มรายการ
+node integrations/add-transaction.js '{"amount":-50,"payee":"ทดสอบ","notes":"ทดสอบระบบ","account":"Checking"}'
+
+# ทดสอบดึงข้อมูล
+node integrations/query-budget.js '{"command":"recent","limit":5}'
+
+# ทดสอบยอดเงิน
+node integrations/query-budget.js '{"command":"balance"}'
+```
+
+จากนั้นรีสตาร์ท OpenClaw และส่งข้อความหาบอทใน Telegram ส่ง `/pair` เพื่อจับคู่บัญชี
+
+## ปรับแต่ง
+
+- **บุคลิกของ Agent** — แก้ไข `workspace/SOUL.md` เพื่อเปลี่ยนชื่อ บุคลิก และสไตล์การตอบ
+- **รูปแบบสลิปธนาคาร** — แก้ไข `workspace/skills/receipt-parser/SKILL.md` เพื่อเพิ่มรูปแบบสลิปธนาคารของประเทศคุณ
+- **บัญชีและหมวดหมู่** — อัปเดตตารางบัญชีใน `workspace/AGENTS.md` ให้ตรงกับงบประมาณของคุณ
+- **สกุลเงิน** — อัปเดต `workspace/USER.md` ด้วยสัญลักษณ์สกุลเงินและโซนเวลาของคุณ
